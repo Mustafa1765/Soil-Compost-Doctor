@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Soil & Compost Doctor | Touch Grass Edition</title>
+  <meta name="description" content="Offline-ready, open-source AI garden assistant for leaves, soil, and compost. Screen time under 10 seconds so you can touch grass.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-dark: #0a1610;
+      --bg-card: #12241b;
+      --bg-card-hover: #193326;
+      --surface-border: #224332;
+      --primary: #22c55e;
+      --primary-hover: #16a34a;
+      --primary-light: #4ade80;
+      --accent-earth: #f59e0b;
+      --accent-terracotta: #ea580c;
+      --accent-alert: #ef4444;
+      --text-main: #f0fdf4;
+      --text-muted: #86efac;
+      --text-dim: #94a3b8;
+      --font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 15% 20%, rgba(34, 197, 94, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 85% 75%, rgba(245, 158, 11, 0.08) 0%, transparent 45%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 12px 48px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 680px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Header & Badge Bar */
+    header {
+      text-align: center;
+      padding: 12px 8px 6px;
+    }
+
+    .logo-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--primary-light);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      font-size: 1.85rem;
+      font-weight: 800;
+      line-height: 1.2;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    h1 span {
+      background: linear-gradient(135deg, #4ade80, #f59e0b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .tagline {
+      font-size: 0.92rem;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+
+    .status-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      background: #0f2117;
+      border: 1px solid var(--surface-border);
+      color: var(--text-dim);
+    }
+
+    .status-pill.active {
+      color: #bbf7d0;
+      border-color: rgba(34, 197, 94, 0.4);
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 6px #22c55e;
+    }
+
+    /* Screen-Time Philosophy Callout */
+    .ten-second-banner {
+      background: linear-gradient(135deg, rgba(234, 88, 12, 0.15), rgba(245, 158, 11, 0.15));
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      border-radius: 12px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .ten-second-banner .left-text {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #fde68a;
+    }
+
+    .ten-second-banner .timer-pill {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #ffffff;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      white-space: nowrap;
+    }
+
+    /* Main Card */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--surface-border);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Category Filter Segment */
+    .filter-label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .category-tabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    @media (max-width: 480px) {
+      .category-tabs {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .cat-btn {
+      background: #0d1e15;
+      border: 1px solid var(--surface-border);
+      color: var(--text-dim);
+      padding: 8px 6px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .cat-btn.active {
+      background: rgba(34, 197, 94, 0.2);
+      border-color: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
+    }
+
+    /* Camera & Capture Zone */
+    .capture-zone {
+      border: 2px dashed var(--surface-border);
+      border-radius: 14px;
+      padding: 20px 14px;
+      text-align: center;
+      background: rgba(10, 22, 16, 0.5);
+      position: relative;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      overflow: hidden;
+    }
+
+    .capture-zone:hover {
+      border-color: var(--primary-light);
+      background: rgba(18, 36, 27, 0.8);
+    }
+
+    .capture-icon {
+      font-size: 2.4rem;
+      margin-bottom: 6px;
+    }
+
+    .capture-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+
+    .capture-subtitle {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+
+    .preview-container {
+      position: relative;
+      width: 100%;
+      max-height: 280px;
+      overflow: hidden;
+      border-radius: 10px;
+      margin-top: 10px;
+      display: none;
+      background: #000;
+    }
+
+    #previewImg {
+      width: 100%;
+      height: 280px;
+      object-fit: cover;
+      display: block;
+    }
+
+    #cameraVideo {
+      width: 100%;
+      height: 280px;
+      object-fit: cover;
+      display: none;
+    }
+
+    .remove-preview-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #fff;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+
+    /* Actions and Inputs */
+    .controls-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .btn-camera {
+      flex: 1;
+      background: #143323;
+      border: 1px solid var(--surface-border);
+      color: var(--text-muted);
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-family: inherit;
+    }
+
+    .btn-camera:hover {
+      background: #1a422e;
+      color: #fff;
+    }
+
+    .note-input {
+      width: 100%;
+      background: #0d1e15;
+      border: 1px solid var(--surface-border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.85rem;
+      margin-top: 12px;
+    }
+
+    .note-input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .btn-diagnose {
+      width: 100%;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: #031409;
+      font-weight: 800;
+      font-size: 1.05rem;
+      padding: 14px 18px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 14px;
+      box-shadow: 0 4px 15px rgba(34, 197, 94, 0.35);
+      transition: transform 0.1s ease, filter 0.2s ease;
+      font-family: inherit;
+    }
+
+    .btn-diagnose:active {
+      transform: scale(0.98);
+    }
+
+    .btn-diagnose:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      filter: grayscale(1);
+    }
+
+    /* 1-Click Samples Section */
+    .samples-bar {
+      margin-top: 14px;
+    }
+
+    .samples-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+    }
+
+    .samples-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .sample-chip {
+      background: #0d1e15;
+      border: 1px solid var(--surface-border);
+      color: var(--text-muted);
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 0.76rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .sample-chip:hover {
+      background: rgba(34, 197, 94, 0.2);
+      border-color: var(--primary);
+      color: #ffffff;
+    }
+
+    /* Loading Spinner Card */
+    #loadingCard {
+      display: none;
+      text-align: center;
+      padding: 28px 16px;
+    }
+
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 4px solid rgba(34, 197, 94, 0.2);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Results Card */
+    #resultCard {
+      display: none;
+    }
+
+    .result-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .category-badge {
+      display: inline-block;
+      background: rgba(34, 197, 94, 0.2);
+      color: var(--primary-light);
+      border: 1px solid rgba(34, 197, 94, 0.4);
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .diagnosis-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-top: 4px;
+    }
+
+    /* Touch Grass Physical Action Box */
+    .task-hero-box {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(16, 185, 129, 0.08));
+      border: 2px solid var(--primary);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 0 20px rgba(34, 197, 94, 0.15);
+    }
+
+    .task-hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #bbf7d0;
+      background: rgba(34, 197, 94, 0.25);
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+
+    .task-instruction {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.45;
+      margin-bottom: 12px;
+    }
+
+    /* Interactive Task Checklist */
+    .checklist-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .checklist-checkbox {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    .checklist-label {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #dcfce7;
+      flex: 1;
+    }
+
+    .checklist-label.completed {
+      text-decoration: line-through;
+      color: #86efac;
+    }
+
+    .completion-cheer {
+      display: none;
+      margin-top: 8px;
+      background: rgba(245, 158, 11, 0.2);
+      border: 1px solid #f59e0b;
+      color: #fef08a;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    /* Speech Controls Bar */
+    .speech-box {
+      background: #0d1e15;
+      border: 1px solid var(--surface-border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .speech-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .speech-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .speech-buttons {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-audio {
+      background: #193826;
+      border: 1px solid var(--surface-border);
+      color: #ffffff;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: inherit;
+    }
+
+    .btn-audio:hover {
+      background: #234d35;
+    }
+
+    .speech-text {
+      font-size: 0.92rem;
+      line-height: 1.4;
+      color: #e2e8f0;
+      font-style: italic;
+    }
+
+    /* Care Tips */
+    .care-tips-box {
+      margin-bottom: 14px;
+    }
+
+    .care-tips-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+    }
+
+    .care-tips-list {
+      list-style-type: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .care-tips-list li {
+      position: relative;
+      padding-left: 20px;
+      font-size: 0.86rem;
+      color: #cbd5e1;
+      line-height: 1.4;
+    }
+
+    .care-tips-list li::before {
+      content: "•";
+      color: var(--primary-light);
+      font-weight: bold;
+      position: absolute;
+      left: 6px;
+    }
+
+    /* Meta / Privacy Footer */
+    .result-footer {
+      border-top: 1px solid var(--surface-border);
+      padding-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+
+    .privacy-tag {
+      color: #86efac;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Reset Button */
+    .btn-reset {
+      background: #142e20;
+      border: 1px solid var(--surface-border);
+      color: #ffffff;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .btn-reset:hover {
+      background: #1b3d2b;
+    }
+
+    /* Hidden File Inputs */
+    #fileInput, #cameraInput {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="logo-badge">🌱 Hacktoberfest 2026 • Touch Grass</div>
+      <h1>Soil & Compost <span>Doctor</span></h1>
+      <p class="tagline">Local open-source AI diagnosis in under 10 seconds. Put your phone away & get your hands in the dirt.</p>
+      
+      <!-- Status Pills -->
+      <div class="status-bar">
+        <div class="status-pill active" id="offlinePill" title="Runs on local machine with no external network API calls">
+          <span class="status-dot"></span>
+          <span>100% Offline Ready</span>
+        </div>
+        <div class="status-pill active" id="ragPill" title="Local persistent ChromaDB vector store">
+          <span class="status-dot"></span>
+          <span id="ragStatusText">ChromaDB RAG: Active</span>
+        </div>
+        <div class="status-pill" id="ollamaPill" title="Local Ollama AI">
+          <span class="status-dot" id="ollamaDot" style="background:#f59e0b; box-shadow:0 0 6px #f59e0b;"></span>
+          <span id="ollamaStatusText">Ollama: Checking...</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- 10-Second Screen Time Challenge Banner -->
+    <div class="ten-second-banner">
+      <div class="left-text">
+        <span>⏱️</span>
+        <span>Goal: Screen time &lt; 10s per interaction</span>
+      </div>
+      <div class="timer-pill" id="screenTimerPill">Timer: Ready</div>
+    </div>
+
+    <!-- Diagnostic Input Card -->
+    <div class="card" id="inputCard">
+      <!-- Category Tabs -->
+      <span class="filter-label">1. Select Target Category:</span>
+      <div class="category-tabs">
+        <button type="button" class="cat-btn active" data-cat="Auto-Detect">✨ Auto-Detect</button>
+        <button type="button" class="cat-btn" data-cat="Leaf Health">🌿 Leaf Health</button>
+        <button type="button" class="cat-btn" data-cat="Soil Quality">🌱 Soil Quality</button>
+        <button type="button" class="cat-btn" data-cat="Compost Status">🍂 Compost Status</button>
+      </div>
+
+      <!-- Image Capture Zone -->
+      <span class="filter-label">2. Capture Garden Specimen:</span>
+      <div class="capture-zone" id="dropZone">
+        <div id="capturePrompt">
+          <div class="capture-icon">📸</div>
+          <div class="capture-title">Tap to Take Photo or Upload</div>
+          <div class="capture-subtitle">Leaf spots, soil texture, or compost pile cross-section</div>
+        </div>
+
+        <!-- Image Preview -->
+        <div class="preview-container" id="previewContainer">
+          <img id="previewImg" alt="Specimen Preview" />
+          <video id="cameraVideo" autoplay playsinline></video>
+          <button type="button" class="remove-preview-btn" id="clearImageBtn">✕ Retake</button>
+        </div>
+      </div>
+
+      <!-- Native Camera / File Buttons -->
+      <div class="controls-row">
+        <!-- Direct Camera Trigger for Mobile/Desktop -->
+        <button type="button" class="btn-camera" id="btnLiveCam">
+          <span>📷</span> Open Live Camera
+        </button>
+        <!-- File Picker Trigger -->
+        <button type="button" class="btn-camera" id="btnBrowseFile">
+          <span>📁</span> Choose Photo
+        </button>
+      </div>
+
+      <!-- Hidden inputs for file capture -->
+      <input type="file" id="cameraInput" accept="image/*" capture="environment">
+      <input type="file" id="fileInput" accept="image/*">
+
+      <!-- Optional Gardener Observation Input -->
+      <input 
+        type="text" 
+        class="note-input" 
+        id="userNoteInput" 
+        placeholder="Quick notes (optional, e.g. 'lower leaves yellowing', 'compost smells sour')"
+      />
+
+      <!-- Diagnose Button -->
+      <button type="button" class="btn-diagnose" id="diagnoseBtn">
+        <span>⚡</span> Diagnose & Get Outdoor Task
+      </button>
+
+      <!-- 1-Click Offline Sample Chips -->
+      <div class="samples-bar">
+        <div class="samples-title">Or test instantly with 1-click garden samples:</div>
+        <div class="samples-list" id="sampleChipsContainer">
+          <button type="button" class="sample-chip" data-sample="sample_blight">🍅 Early Blight (Tomato)</button>
+          <button type="button" class="sample-chip" data-sample="sample_mildew">🥒 Powdery Mildew</button>
+          <button type="button" class="sample-chip" data-sample="sample_clay">🧱 Compacted Clay</button>
+          <button type="button" class="sample-chip" data-sample="sample_smelly_compost">🪰 Smelly Compost</button>
+          <button type="button" class="sample-chip" data-sample="sample_black_gold">✨ Finished Black Gold</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading Card -->
+    <div class="card" id="loadingCard">
+      <div class="spinner"></div>
+      <h3 style="font-size: 1.15rem; color:#fff; margin-bottom: 6px;">Analyzing Garden Specimen...</h3>
+      <p style="font-size: 0.85rem; color: var(--text-dim);" id="loadingSubtext">Querying local ChromaDB & running local AI model</p>
+    </div>
+
+    <!-- Diagnosis Result Card -->
+    <div class="card" id="resultCard">
+      <div class="result-header">
+        <div>
+          <span class="category-badge" id="resCategory">Leaf Health</span>
+          <h2 class="diagnosis-title" id="resDiagnosis">Early Blight</h2>
+        </div>
+        <button type="button" class="btn-reset" id="newScanBtn">↺ New Scan</button>
+      </div>
+
+      <!-- Prominent Physical Task Callout -->
+      <div class="task-hero-box">
+        <div class="task-hero-badge">🚜 Immediate Outdoor Action Item</div>
+        <div class="task-instruction" id="resTask">Prune off all affected lower leaves within 6 inches of the soil immediately.</div>
+
+        <!-- Checklist Item -->
+        <label class="checklist-row" for="taskCompletedCheckbox">
+          <input type="checkbox" id="taskCompletedCheckbox" class="checklist-checkbox" />
+          <span class="checklist-label" id="taskCheckboxLabel">I did this physical task in the garden!</span>
+        </label>
+        <div class="completion-cheer" id="completionCheer">
+          🎉 Awesome work! Hands back in the dirt. Close your phone and touch grass!
+        </div>
+      </div>
+
+      <!-- Spoken Summary Bar (Web Speech API) -->
+      <div class="speech-box">
+        <div class="speech-header">
+          <div class="speech-title">
+            <span>🔊</span>
+            <span id="speechStatus">Voice Summary (Hands-Free)</span>
+          </div>
+          <div class="speech-buttons">
+            <button type="button" class="btn-audio" id="btnSpeak">▶ Read Aloud</button>
+            <button type="button" class="btn-audio" id="btnStopSpeech">⏹ Stop</button>
+          </div>
+        </div>
+        <p class="speech-text" id="resSpoken">"Prune the bottom four inches of leaves immediately and mulch with straw."</p>
+      </div>
+
+      <!-- Care Tips -->
+      <div class="care-tips-box">
+        <div class="care-tips-title">Long-Term Care Guidelines:</div>
+        <ul class="care-tips-list" id="resCareTips">
+          <li>Mulch soil with 2 inches of straw.</li>
+          <li>Water only at the root base.</li>
+        </ul>
+      </div>
+
+      <!-- Privacy & Latency Footer -->
+      <div class="result-footer">
+        <div class="privacy-tag">
+          <span>🔒</span>
+          <span>100% Offline • Zero Cloud Exposure</span>
+        </div>
+        <div id="latencyTag">⚡ Latency: 0.4s (Screen time &lt; 10s)</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // State Variables
+    let selectedCategory = 'Auto-Detect';
+    let currentImageBase64 = null;
+    let cameraStream = null;
+    let timerStartTime = null;
+    let timerInterval = null;
+    let lastSpokenText = "";
+
+    // DOM Elements
+    const dropZone = document.getElementById('dropZone');
+    const capturePrompt = document.getElementById('capturePrompt');
+    const previewContainer = document.getElementById('previewContainer');
+    const previewImg = document.getElementById('previewImg');
+    const cameraVideo = document.getElementById('cameraVideo');
+    const fileInput = document.getElementById('fileInput');
+    const cameraInput = document.getElementById('cameraInput');
+    const btnBrowseFile = document.getElementById('btnBrowseFile');
+    const btnLiveCam = document.getElementById('btnLiveCam');
+    const clearImageBtn = document.getElementById('clearImageBtn');
+    const diagnoseBtn = document.getElementById('diagnoseBtn');
+    const userNoteInput = document.getElementById('userNoteInput');
+    const screenTimerPill = document.getElementById('screenTimerPill');
+
+    const inputCard = document.getElementById('inputCard');
+    const loadingCard = document.getElementById('loadingCard');
+    const resultCard = document.getElementById('resultCard');
+
+    const resCategory = document.getElementById('resCategory');
+    const resDiagnosis = document.getElementById('resDiagnosis');
+    const resTask = document.getElementById('resTask');
+    const resSpoken = document.getElementById('resSpoken');
+    const resCareTips = document.getElementById('resCareTips');
+    const taskCompletedCheckbox = document.getElementById('taskCompletedCheckbox');
+    const taskCheckboxLabel = document.getElementById('taskCheckboxLabel');
+    const completionCheer = document.getElementById('completionCheer');
+    const latencyTag = document.getElementById('latencyTag');
+    const newScanBtn = document.getElementById('newScanBtn');
+
+    const btnSpeak = document.getElementById('btnSpeak');
+    const btnStopSpeech = document.getElementById('btnStopSpeech');
+    const speechStatus = document.getElementById('speechStatus');
+
+    const ragStatusText = document.getElementById('ragStatusText');
+    const ollamaStatusText = document.getElementById('ollamaStatusText');
+    const ollamaDot = document.getElementById('ollamaDot');
+
+    // 1. Health Status Poll
+    async function checkHealth() {
+      try {
+        const res = await fetch('/api/health');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.chromadb && data.chromadb.status === 'active') {
+            ragStatusText.innerText = `ChromaDB: ${data.chromadb.records_count} rules`;
+          }
+          if (data.ollama && data.ollama.online) {
+            ollamaStatusText.innerText = `Ollama: Online (${data.ollama.models.length} models)`;
+            ollamaDot.style.background = '#22c55e';
+            ollamaDot.style.boxShadow = '0 0 6px #22c55e';
+          } else {
+            ollamaStatusText.innerText = 'Ollama: Standby (RAG Active)';
+            ollamaDot.style.background = '#38bdf8';
+            ollamaDot.style.boxShadow = '0 0 6px #38bdf8';
+          }
+        }
+      } catch (e) {
+        console.log('Health check note:', e);
+        ollamaStatusText.innerText = 'Offline Mode (Local RAG)';
+      }
+    }
+    checkHealth();
+
+    // 2. Category Selection Tabs
+    document.querySelectorAll('.cat-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedCategory = btn.dataset.cat;
+      });
+    });
+
+    // 3. Image Capture Handling
+    function setImage(base64Data) {
+      currentImageBase64 = base64Data;
+      previewImg.src = base64Data;
+      previewImg.style.display = 'block';
+      cameraVideo.style.display = 'none';
+      stopCameraStream();
+      capturePrompt.style.display = 'none';
+      previewContainer.style.display = 'block';
+    }
+
+    function clearImage() {
+      currentImageBase64 = null;
+      previewImg.src = '';
+      previewImg.style.display = 'none';
+      stopCameraStream();
+      previewContainer.style.display = 'none';
+      capturePrompt.style.display = 'block';
+      fileInput.value = '';
+      cameraInput.value = '';
+    }
+
+    clearImageBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      clearImage();
+    });
+
+    btnBrowseFile.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('click', () => {
+      if (!currentImageBase64 && !cameraStream) {
+        fileInput.click();
+      }
+    });
+
+    fileInput.addEventListener('change', handleFileSelect);
+    cameraInput.addEventListener('change', handleFileSelect);
+
+    function handleFileSelect(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (evt) => setImage(evt.target.result);
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // Drag and drop
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.style.borderColor = '#22c55e';
+    });
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.style.borderColor = 'var(--surface-border)';
+    });
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.style.borderColor = 'var(--surface-border)';
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (evt) => setImage(evt.target.result);
+        reader.readAsDataURL(e.dataTransfer.files[0]);
+      }
+    });
+
+    // 4. Live Camera WebRTC Feature
+    btnLiveCam.addEventListener('click', async () => {
+      // If mobile, prefer native camera capture input for highest resolution
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      if (isMobile) {
+        cameraInput.click();
+        return;
+      }
+
+      // Desktop / WebRTC
+      try {
+        if (cameraStream) {
+          // Snap from existing stream
+          snapSnapshot();
+          return;
+        }
+
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { facingMode: 'environment', width: { ideal: 1280 } } 
+        });
+        cameraStream = stream;
+        cameraVideo.srcObject = stream;
+        cameraVideo.style.display = 'block';
+        previewImg.style.display = 'none';
+        capturePrompt.style.display = 'none';
+        previewContainer.style.display = 'block';
+        btnLiveCam.innerHTML = '<span>📸</span> Snap Picture';
+      } catch (err) {
+        console.warn('Camera access error:', err);
+        // Fallback to file picker
+        cameraInput.click();
+      }
+    });
+
+    function snapSnapshot() {
+      const canvas = document.createElement('canvas');
+      canvas.width = cameraVideo.videoWidth || 640;
+      canvas.height = cameraVideo.videoHeight || 480;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(cameraVideo, 0, 0, canvas.width, canvas.height);
+      const b64 = canvas.toDataURL('image/jpeg', 0.85);
+      setImage(b64);
+      btnLiveCam.innerHTML = '<span>📷</span> Open Live Camera';
+    }
+
+    function stopCameraStream() {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+        cameraVideo.srcObject = null;
+        btnLiveCam.innerHTML = '<span>📷</span> Open Live Camera';
+      }
+    }
+
+    // 5. 1-Click Sample Testing
+    const SAMPLES_DATA = {
+      sample_blight: {
+        category: "Leaf Health",
+        note: "Brown target-shaped spots with yellow ring on lower tomato leaves.",
+        svgText: "Early Blight (Tomato Leaf)"
+      },
+      sample_mildew: {
+        category: "Leaf Health",
+        note: "White powdery talcum-like film covering zucchini leaf surface.",
+        svgText: "Powdery Mildew"
+      },
+      sample_clay: {
+        category: "Soil Quality",
+        note: "Heavily compacted clay bed, dry cracks, hard to spade.",
+        svgText: "Compacted Clay"
+      },
+      sample_smelly_compost: {
+        category: "Compost Status",
+        note: "Compost pile smells foul like rotten eggs and feels slimy.",
+        svgText: "Anaerobic Wet Compost"
+      },
+      sample_black_gold: {
+        category: "Compost Status",
+        note: "Finished crumbly black gold compost smelling like earthy forest floor.",
+        svgText: "Finished Black Gold"
+      }
+    };
+
+    function createSampleImage(title, category) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 400;
+      canvas.height = 300;
+      const ctx = canvas.getContext('2d');
+      // Natural gradient background
+      const grad = ctx.createLinearGradient(0, 0, 400, 300);
+      if (category === 'Leaf Health') {
+        grad.addColorStop(0, '#14532d');
+        grad.addColorStop(1, '#052e16');
+      } else if (category === 'Soil Quality') {
+        grad.addColorStop(0, '#78350f');
+        grad.addColorStop(1, '#451a03');
+      } else {
+        grad.addColorStop(0, '#1c1917');
+        grad.addColorStop(1, '#292524');
+      }
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 400, 300);
+
+      // Icon & Text
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 22px system-ui';
+      ctx.textAlign = 'center';
+      ctx.fillText('🌱 ' + title, 200, 140);
+      ctx.font = '14px system-ui';
+      ctx.fillStyle = '#86efac';
+      ctx.fillText(`Category: ${category} • Specimen Sample`, 200, 175);
+      return canvas.toDataURL('image/jpeg', 0.9);
+    }
+
+    document.querySelectorAll('.sample-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const sampleKey = chip.dataset.sample;
+        const info = SAMPLES_DATA[sampleKey];
+        if (info) {
+          // Select corresponding tab
+          document.querySelectorAll('.cat-btn').forEach(b => {
+            if (b.dataset.cat === info.category) {
+              b.classList.add('active');
+              selectedCategory = info.category;
+            } else {
+              b.classList.remove('active');
+            }
+          });
+          userNoteInput.value = info.note;
+          const sampleB64 = createSampleImage(info.svgText, info.category);
+          setImage(sampleB64);
+          // Trigger diagnosis immediately for fast experience
+          runDiagnosis();
+        }
+      });
+    });
+
+    // 6. Diagnosis Execution
+    diagnoseBtn.addEventListener('click', runDiagnosis);
+
+    async function runDiagnosis() {
+      // Start 10-Second Screen Time Stopwatch
+      const startTime = performance.now();
+      screenTimerPill.innerText = "⏱️ Analyzing...";
+      screenTimerPill.style.color = "#fef08a";
+
+      // Show Loading Card
+      inputCard.style.display = 'none';
+      resultCard.style.display = 'none';
+      loadingCard.style.display = 'block';
+
+      try {
+        const payload = {
+          image: currentImageBase64 || "",
+          category: selectedCategory,
+          note: userNoteInput.value.trim()
+        };
+
+        const res = await fetch('/diagnose', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          throw new Error(`Diagnosis server error: ${res.status}`);
+        }
+
+        const data = await res.json();
+        const elapsedSec = ((performance.now() - startTime) / 1000).toFixed(1);
+
+        // Update Screen Time Pill
+        if (elapsedSec <= 10.0) {
+          screenTimerPill.innerText = `⚡ ${elapsedSec}s (Target Met! < 10s)`;
+          screenTimerPill.style.color = "#86efac";
+        } else {
+          screenTimerPill.innerText = `⏱️ ${elapsedSec}s elapsed`;
+          screenTimerPill.style.color = "#fef08a";
+        }
+
+        renderResult(data, elapsedSec);
+      } catch (err) {
+        console.error('Diagnosis error:', err);
+        alert('Could not complete diagnosis. Please ensure Flask app.py is running on localhost:5000.');
+        inputCard.style.display = 'block';
+        loadingCard.style.display = 'none';
+      }
+    }
+
+    // 7. Render Result & Web Speech Synthesis
+    function renderResult(data, elapsedSec) {
+      loadingCard.style.display = 'none';
+      resultCard.style.display = 'block';
+
+      resCategory.innerText = data.category || 'Leaf Health';
+      resDiagnosis.innerText = data.diagnosis || 'Garden Inspection';
+      resTask.innerText = data.real_world_task || 'Inspect plant base and water roots.';
+      taskCheckboxLabel.innerText = 'Mark done: ' + (data.real_world_task || 'Complete outdoor action');
+      
+      // Reset checklist state
+      taskCompletedCheckbox.checked = false;
+      taskCheckboxLabel.classList.remove('completed');
+      completionCheer.style.display = 'none';
+
+      // Care tips
+      resCareTips.innerHTML = '';
+      if (Array.isArray(data.care_tips) && data.care_tips.length > 0) {
+        data.care_tips.forEach(tip => {
+          const li = document.createElement('li');
+          li.innerText = tip;
+          resCareTips.appendChild(li);
+        });
+      } else {
+        const li = document.createElement('li');
+        li.innerText = 'Inspect soil regularly and maintain good airflow.';
+        resCareTips.appendChild(li);
+      }
+
+      // Voice Summary
+      const spoken = data.spoken_summary || `${data.diagnosis}. ${data.real_world_task}`;
+      resSpoken.innerText = `"${spoken}"`;
+      lastSpokenText = spoken;
+
+      // Latency tag
+      latencyTag.innerText = `⚡ Screen time: ${elapsedSec}s • Put phone away!`;
+
+      // Auto-trigger voice read so hands can stay in dirt
+      speakSummary(spoken);
+    }
+
+    // 8. Web Speech Synthesis
+    function speakSummary(text) {
+      if (!('speechSynthesis' in window)) {
+        speechStatus.innerText = 'Voice summary (Web Speech unsupported in browser)';
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+      
+      utterance.onstart = () => {
+        speechStatus.innerText = '🔊 Speaking diagnosis aloud...';
+      };
+      utterance.onend = () => {
+        speechStatus.innerText = '✓ Voice summary finished. Back to the dirt!';
+      };
+      utterance.onerror = () => {
+        speechStatus.innerText = 'Voice summary paused';
+      };
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    btnSpeak.addEventListener('click', () => {
+      if (lastSpokenText) speakSummary(lastSpokenText);
+    });
+
+    btnStopSpeech.addEventListener('click', () => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        speechStatus.innerText = '⏹ Voice playback stopped';
+      }
+    });
+
+    // 9. Interactive Physical Task Checkbox
+    taskCompletedCheckbox.addEventListener('change', () => {
+      if (taskCompletedCheckbox.checked) {
+        taskCheckboxLabel.classList.add('completed');
+        completionCheer.style.display = 'block';
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          const cheerUtterance = new SpeechSynthesisUtterance("Great job! Now put your phone away and touch grass!");
+          window.speechSynthesis.speak(cheerUtterance);
+        }
+      } else {
+        taskCheckboxLabel.classList.remove('completed');
+        completionCheer.style.display = 'none';
+      }
+    });
+
+    // 10. New Scan Reset
+    newScanBtn.addEventListener('click', () => {
+      resultCard.style.display = 'none';
+      inputCard.style.display = 'block';
+      clearImage();
+      userNoteInput.value = '';
+      screenTimerPill.innerText = 'Timer: Ready';
+      screenTimerPill.style.color = '#ffffff';
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    });
+  </script>
+</body>
+</html>
